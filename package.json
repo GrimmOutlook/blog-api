@@ -1,0 +1,33 @@
+{
+  "name": "blog-api",
+  "version": "1.0.0",
+  "description": "thinkful node-express blog api challenge",
+  "main": "server.js",
+  "scripts": {
+    // "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GrimmOutlook/blog-api.git"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "CRUD",
+    "blog",
+    "awesomeness"
+  ],
+  "author": "David Grimm",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GrimmOutlook/blog-api/issues"
+  },
+  "homepage": "https://github.com/GrimmOutlook/blog-api#readme",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "morgan": "^1.8.2",
+    "uuid": "^3.0.1"
+  }
+}

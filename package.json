@@ -4,7 +4,8 @@
   "description": "thinkful node-express blog api challenge",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "mocha ./test"
   },
   "repository": {
     "type": "git",

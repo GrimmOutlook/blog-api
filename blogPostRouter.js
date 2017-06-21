@@ -1,78 +1,104 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 
 
-const {BlogPosts} = require('./models');
-
-
-// dummy data
-// a title, content, an author name, and (optionally) a publication date
-BlogPosts.create(
-  'An Awesome Title', 'Master cleanse taiyaki XOXO scenester pork belly skateboard semiotics selfies, vape marfa shabby chic hella meditation. Helvetica humblebrag 3 wolf moon tousled, ethical la croix whatever hammock gochujang deep v kogi fanny pack before they sold out thundercats small batch. Aesthetic vexillologist affogato gastropub. Selvage raclette chia yuccie, before they sold out schlitz wolf man bun keffiyeh tousled hashtag. Thundercats meggings pork belly locavore raclette. Enamel pin YOLO flannel health goth vegan. Cardigan vexillologist viral tote bag bitters, waistcoat pork belly kinfolk hoodie tattooed pabst.', 'Bugs Bunny', '1692');
-
-BlogPosts.create(
-  'This Title Will Make You Read the Article', 'Kale chips DIY, flexitarian poke copper mug cred bitters vegan before they sold out venmo. Humblebrag taiyaki raw denim, succulents venmo aesthetic retro keytar pour-over subway tile blog normcore banjo paleo. Cornhole shabby chic cold-pressed, tumeric leggings coloring book farm-to-table flexitarian lyft knausgaard occupy lo-fi drinking vinegar kinfolk. Scenester four dollar toast umami, stumptown tattooed irony activated charcoal mustache direct trade humblebrag. YOLO fam butcher health goth skateboard, pinterest banh mi actually narwhal unicorn. Next level actually mustache vape, authentic XOXO shoreditch butcher fam. Glossier raclette activated charcoal hashtag celiac, typewriter bespoke adaptogen fanny pack man braid.', 'Yosemite Sam', '2014');
+const {BlogPost} = require('./models');
 
 
 router.get('/', (req, res) => {
-  res.json(BlogPosts.get());
+  BlogPost.find().limit(5)
+  .exec()
+    .then(blogPosts => {
+      res.json({
+        blogPosts: blogPosts.map(
+          blogPost => blogPost.apiRepr())
+      });
+    })
+    .catch(
+      err => {
+        console.error(err);
+        res.status(500).json({message: 'Some baaaad shit went down here - try again!'});
+    });
+});
+
+router.get('/id', (req, res) => {
+  BlogPost
+    .findById(req.params.id)
+    .exec()
+    .then(blogpost => blogPost.apiRepr())
+    .catch(
+      err => {
+        console.error(err);
+        res.status(500).json({message: 'Something\'s happening here, what it is ain\'t exactly clear'});
+    });
 });
 
 
-router.post('/', jsonParser, (req, res) => {
+router.post('/', (req, res) => {
   // a title, content, an author name, and (optionally) a publication date
-  const requiredFields = ['title', 'content', 'author', 'publishDate'];
+  const requiredFields = ['title', 'content', 'author'];
   for (let i=0; i < requiredFields.length; i++) {
     const field = requiredFields[i];
     if (!(field in req.body)) {
-      const message = `Missing \`${field}\` in request body`
+      const message = `Missing \`${field}\` in request body`;
       console.error(message);
       return res.status(400).send(message);
     }
   }
-  const blogPost = BlogPosts.create(req.body.title, req.body.content, req.body.author, req.body.publishDate);
-  res.status(201).json(blogPost);
+  BlogPost
+    .create({
+      title: req.body.title,
+      content: req.body.content,
+      author: req.body.author
+    })
+    .then(blogpost => res.status(201).json(blogPost.apiRepr()))
+    .catch(
+      err => {
+        console.error(err);
+        res.status(500).json({message: 'Step away from the ledge and try again!'});
+    });
 });
 
 
 router.delete('/:id', (req, res) => {
-  BlogPosts.delete(req.params.id);
-  console.log(`Deleted blog post with id \`${req.params.ID}\``);
-  res.status(204).end();
+  BlogPost
+    .findByIdAndRemove(req.params.id)
+    .exec()
+    .then(() => {
+      res.status(204).json({message: `You did it! ${req.params.id} is gone!`})
+    })
+    .catch(
+      err => {
+        console.error(err);
+        res.status(500).json({message: 'Your mission has failed, better luck next time.'});
+    });
 });
 
 
+router.put('/posts/:id', (req, res) => {
+  if (!(req.params.id === req.body.id)) {
+    res.status(400).json({
+      error: 'Request path id and request body id values must match'
+    });
+  }
 
-router.put('/:id', jsonParser, (req, res) => {
-  const requiredFields = ['id', 'title', 'content', 'author', 'publishDate'];
-  for (let i=0; i < (requiredFields.length - 1); i++) {
-    const field = requiredFields[i];
-    if (!(field in req.body)) {
-      const message = `Missing \`${field}\` in request body`
-      console.error(message);
-      return res.status(400).send(message);
+  const updated = {};
+  const updateableFields = ['title', 'content', 'author'];
+  updateableFields.forEach(field => {
+    if (field in req.body) {
+      updated[field] = req.body[field];
     }
-  }
-  if (req.params.id !== req.body.id) {
-    const message = (
-      `Request path id (${req.params.id}) and request body id `
-      `(${req.body.id}) must match`
-      );
-    console.error(message);
-    return res.status(400).send(message);
-  }
-  console.log(`Updating Blog Post \`${req.body.title}\``);
-  const updatedBlogPost = BlogPosts.update({
-    id: req.params.id,
-    title: req.body.title,
-    content: req.body.content,
-    author: req.body.author,
-    pubdate: req.body.publishDate
   });
-  res.status(204).json(updatedBlogPost);
-})
+
+  BlogPost
+    .findByIdAndUpdate(req.params.id, {$set: updated}, {new: true})
+    .exec()
+    .then(updatedPost => res.status(201).json(updatedPost.apiRepr()))
+    .catch(err => res.status(500).json({message: 'Something went wrong'}));
+});
 
 module.exports = router;

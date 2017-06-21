@@ -1,24 +1,25 @@
-const bodyParser = require('body-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const bodyParser = require('body-parser');
+const jsonParser = bodyParser.json();
 
 const app = express();
 
 const blogPostRouter = require('./blogPostRouter');
 
-const {PORT, DATABASE_URL} = require('./config');
-const {blogPost} = require('./models');
+const {DATABASE_URL, PORT} = require('./config');
+// const {BlogPost} = require('./models');
 
 app.use(morgan('common'));
 app.use(express.static('public'));
-app.use(bodyParser.json());
+app.use(jsonParser);
 
 mongoose.Promise = global.Promise;
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/views/index.html');
-});
+// app.get('/', (req, res) => {
+//   res.sendFile(__dirname + '/views/index.html');
+// });
 
 app.use('/blogpost', blogPostRouter);
 

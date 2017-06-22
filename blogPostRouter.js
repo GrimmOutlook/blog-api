@@ -90,7 +90,7 @@ router.delete('/:id', (req, res) => {
 });
 
 
-router.put('/posts/:id', (req, res) => {
+router.put('/:id', (req, res) => {
   if (!(req.params.id === req.body.id)) {
     res.status(400).json({
       error: 'Request path id and request body id values must match'
@@ -108,7 +108,7 @@ router.put('/posts/:id', (req, res) => {
   BlogPost
     .findByIdAndUpdate(req.params.id, {$set: updated}, {new: true})
     .exec()
-    .then(updatedPost => res.status(201).json(updatedPost.apiRepr()))
+    .then(doesntMatterWhat => res.status(201).json(doesntMatterWhat.apiRepr()))
     .catch(err => res.status(500).json({message: 'Something went wrong, be very afraid!'}));
 });
 

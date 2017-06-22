@@ -9,14 +9,25 @@ const jsonParser = bodyParser.json();
 const {BlogPost} = require('./models');
 
 
+// .then(restaurants => {
+//       res.json({
+//         restaurants: restaurants.map(
+//           (restaurant) => restaurant.apiRepr())
+//       });
+//     })
+
+//     .then(posts => {
+//       res.json(posts.map(
+//         post => post.apiRepr())
+//       );
+//     })
+
 router.get('/', (req, res) => {
-  BlogPost.find().limit(5)
+  console.log("WTF doesn't this GET request work?");
+  BlogPost.find()
   .exec()
-    .then(blogPosts => {
-      res.json({
-        blogPosts: blogPosts.map(
-          blogPost => blogPost.apiRepr())
-      });
+    .then(posts => {
+      res.json(posts.map(post => post.apiRepr()));
     })
     .catch(
       err => {
@@ -25,15 +36,15 @@ router.get('/', (req, res) => {
     });
 });
 
-router.get('/id', (req, res) => {
+router.get('/:id', (req, res) => {
   BlogPost
     .findById(req.params.id)
     .exec()
-    .then(blogpost => blogPost.apiRepr())
+    .then(post => res.json(post.apiRepr()))
     .catch(
       err => {
         console.error(err);
-        res.status(500).json({message: 'Something\'s happening here, what it is ain\'t exactly clear'});
+        res.status(500).json({message: 'Something\'s happening here, what it is ain\'t exactly clear.'});
     });
 });
 
@@ -55,7 +66,7 @@ router.post('/', (req, res) => {
       content: req.body.content,
       author: req.body.author
     })
-    .then(blogpost => res.status(201).json(blogPost.apiRepr()))
+    .then(post => res.status(201).json(post.apiRepr()))
     .catch(
       err => {
         console.error(err);
@@ -98,7 +109,7 @@ router.put('/posts/:id', (req, res) => {
     .findByIdAndUpdate(req.params.id, {$set: updated}, {new: true})
     .exec()
     .then(updatedPost => res.status(201).json(updatedPost.apiRepr()))
-    .catch(err => res.status(500).json({message: 'Something went wrong'}));
+    .catch(err => res.status(500).json({message: 'Something went wrong, be very afraid!'}));
 });
 
 module.exports = router;

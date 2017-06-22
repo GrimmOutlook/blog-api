@@ -11,21 +11,29 @@ const blogPostSchema = mongoose.Schema({
 });
 
 
-blogPostSchema.virtual('authorString').get(() => {
-  return `${this.author.firstName} ${this.author.lastName}`});
+blogPostSchema.virtual('authorName').get(function() {
+  return `${this.author.firstName} ${this.author.lastName}`; //trim()
+});
+
+// var abbreviations = fakeTitles.map(
+//     title => title.toLowerCase().slice(0, 3));
+
+// blogPostSchema.virtual('authorString').get(
+//   () => `${this.author.firstName} ${this.author.lastName}`);
 
 
-blogPostSchema.methods.apiRepr = () => {
+blogPostSchema.methods.apiRepr = function() {
+  console.log(this);
   return {
     id: this._id,
-    title: this.title,
-    author: this.authorString,
+    author: this.authorName,
     content: this.content,
+    title: this.title,
     created: this.created
   };
 }
 
-const BlogPost = mongoose.model('Blogpost', blogPostSchema);
+const BlogPost = mongoose.model('BlogPost', blogPostSchema);
 
 module.exports = {BlogPost};
 

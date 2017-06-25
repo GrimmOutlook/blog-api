@@ -95,7 +95,32 @@ describe('BlogPosts', function() {
       });
   });
 
-});
+  it('should return blogposts with correct fields on GET', function(){
+    let res;
+    return chai.request(app)
+      .get('/blogpost')
+      .then(_res => {
+        res = _res;
+        res.should.have.status(200);
+        res.body.should.be.a('array');
+        res.body.should.have.length.of.at.least(1);
+
+        res.body.forEach(function(blogpost) {
+          blogpost.should.be.a('object');
+          blogpost.should.include.keys(
+            'id', 'author', 'content', 'title', 'created');
+        });
+        res = res.body[0];
+        return BlogPost.findById(res.id).exec();
+      })
+      .then(blogpost => {
+          res.title.should.equal(blogpost.title);
+          res.content.should.equal(blogpost.content);
+          res.author.should.equal(blogpost.authorName);
+      });
+  });
+
+});  // describe end bracket / parentheses
 
 
 //   it('should add an item on POST', function() {
